@@ -23,11 +23,14 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 def create_access_token(
     subject: str | int,
+    role: str = "merchant",
     expires_delta: Optional[timedelta] = None,
 ) -> str:
     """
     Create a signed JWT.
-    `subject` is typically the user/merchant ID.
+
+    `subject` is the user/merchant/customer ID.
+    `role` is either "merchant" or "customer" — used for RBAC.
     """
     if expires_delta is None:
         expires_delta = timedelta(minutes=settings.access_token_expire_minutes)
@@ -35,6 +38,7 @@ def create_access_token(
     expire = datetime.now(timezone.utc) + expires_delta
     payload = {
         "sub": str(subject),
+        "role": role,
         "exp": expire,
         "iat": datetime.now(timezone.utc),
     }

@@ -1,4 +1,4 @@
-"""Authentication endpoints: register and login."""
+"""Merchant authentication endpoints: register, login, me."""
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -20,14 +20,12 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 @router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
 def register_merchant(payload: MerchantRegister, db: Session = Depends(get_db)):
     """Register a new merchant and return an access token."""
-    # Check for duplicate email
     if db.query(Merchant).filter(Merchant.email == payload.email).first():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered",
         )
 
-    # Check for duplicate store_slug
     if db.query(Merchant).filter(Merchant.store_slug == payload.store_slug).first():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -44,7 +42,7 @@ def register_merchant(payload: MerchantRegister, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(merchant)
 
-    token = create_access_token(subject=merchant.id)
+    token = create_access_token(subject=merchant.id, role="merchant")
     return Token(access_token=token)
 
 
@@ -66,7 +64,7 @@ def login_merchant(payload: MerchantLogin, db: Session = Depends(get_db)):
             detail="Merchant account is inactive",
         )
 
-    token = create_access_token(subject=merchant.id)
+    token = create_access_token(subject=merchant.id, role="merchant")
     return Token(access_token=token)
 
 

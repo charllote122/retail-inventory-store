@@ -30,3 +30,12 @@ class MerchantResponse(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+
+class MerchantPublicResponse(BaseModel):
+    """What customers see on the storefront — no sensitive fields."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    store_name: str
+    store_slug: str

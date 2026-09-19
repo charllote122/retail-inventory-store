@@ -23,5 +23,8 @@ class Settings(BaseSettings):
     app_name: str = "Retail SaaS"
     debug: bool = True
 
+    # Stripe
+    stripe_secret_key: str = ""
+
 
 settings = Settings()

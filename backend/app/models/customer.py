@@ -1,4 +1,4 @@
-"""Merchant (store owner) model — the multi-tenant root of the platform."""
+"""Customer model — the buyer. Separate from Merchant."""
 
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
@@ -7,19 +7,17 @@ from sqlalchemy.orm import relationship
 from app.database import Base
 
 
-class Merchant(Base):
-    __tablename__ = "merchants"
+class Customer(Base):
+    __tablename__ = "customers"
 
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
 
-    store_name = Column(String(100), nullable=False)
-    store_slug = Column(String(100), unique=True, nullable=False, index=True)
+    full_name = Column(String(150), nullable=True)
+    country = Column(String(2), nullable=True)  # ISO 3166 (US, DE, PL, EE)
 
     is_active = Column(Boolean, default=True, nullable=False)
-
-    stripe_account_id = Column(String(255), nullable=True)
 
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(
@@ -29,14 +27,7 @@ class Merchant(Base):
         nullable=False,
     )
 
-    # Relationship: merchant has many products.
-    # Deleting a merchant cascades to delete all their products.
-    products = relationship(
-        "Product",
-        back_populates="merchant",
-        cascade="all, delete-orphan",
-    )
+    orders = relationship("Order", back_populates="customer")
 
     def __repr__(self) -> str:
-        return f"<Merchant id={self.id} store={self.store_slug}>"
-
+        return f"<Customer id={self.id} email={self.email}>"
