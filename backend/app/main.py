@@ -4,11 +4,9 @@ from fastapi import FastAPI
 
 from app.core.config import settings
 from app.database import Base, engine
-
-# Import models so SQLAlchemy knows about them before create_all
 from app import models  # noqa: F401
+from app.api import auth
 
-# Create tables on startup (dev-only; use Alembic in production)
 Base.metadata.create_all(bind=engine)
 
 
@@ -17,6 +15,10 @@ app = FastAPI(
     debug=settings.debug,
     version="0.1.0",
 )
+
+
+# Routers
+app.include_router(auth.router)
 
 
 @app.get("/", tags=["health"])
