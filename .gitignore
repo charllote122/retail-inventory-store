@@ -1,0 +1,35 @@
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pkl
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Data (regenerate with generator)
+ml/data/raw/*.csv
+ml/data/processed/*.csv
+
+# Node
+node_modules/
+frontend/build/
+frontend/dist/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
