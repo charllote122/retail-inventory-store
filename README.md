@@ -1,7 +1,5 @@
 # 🏪 Retail SaaS — Multi-Tenant E-Commerce Platform with AI Demand Forecasting
 
-# 🏪 Retail SaaS — Multi-Tenant E-Commerce Platform with AI Demand Forecasting
-
 A production-grade SaaS platform inspired by Shopify. Merchants launch their own storefront, manage inventory, and see AI-powered demand forecasts for every product. Customers browse, cart, and checkout with Stripe payments.
 
 Built as a portfolio project demonstrating full-stack engineering, multi-tenant architecture, ML forecasting, payment processing, and production hardening.
