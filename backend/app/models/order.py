@@ -44,8 +44,9 @@ class Order(Base):
     # Lifecycle: pending → paid → shipped → delivered
     status = Column(String(30), default="pending", nullable=False, index=True)
 
-    # Stripe will populate this when a payment succeeds
+    # Stripe integration fields
     stripe_payment_intent_id = Column(String(255), nullable=True, index=True)
+    stripe_checkout_session_id = Column(String(255), nullable=True, index=True)
 
     shipping_address = Column(Text, nullable=True)
 

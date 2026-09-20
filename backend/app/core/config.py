@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     # JWT
     secret_key: str
     algorithm: str = "HS256"
-    access_token_expire_minutes: int = 30
+    access_token_expire_minutes: int = 480
 
     # App
     app_name: str = "Retail SaaS"
@@ -25,6 +25,7 @@ class Settings(BaseSettings):
 
     # Stripe
     stripe_secret_key: str = ""
+    stripe_webhook_secret: str = ""
 
 
 settings = Settings()
