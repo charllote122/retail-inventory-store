@@ -34,6 +34,17 @@ def _get_active_merchant(slug: str, db: Session) -> Merchant:
     return merchant
 
 
+@router.get("", response_model=list[MerchantPublicResponse])
+def list_all_stores(db: Session = Depends(get_db)):
+    """List all active stores (public store directory)."""
+    return (
+        db.query(Merchant)
+        .filter(Merchant.is_active == True)
+        .order_by(Merchant.store_name)
+        .all()
+    )
+
+
 @router.get("/{slug}", response_model=MerchantPublicResponse)
 def get_store(slug: str, db: Session = Depends(get_db)):
     """Get public info about a store by its slug."""

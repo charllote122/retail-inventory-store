@@ -1,11 +1,22 @@
 """
-Delete existing products and replace with real fashion products from
-Hugging Face. Names, categories, and images all come from the dataset,
-so they're always consistent.
+Populate the database with real fashion products from Hugging Face.
+Uses the HIGH-RESOLUTION dataset (900x1200) so images can be zoomed.
+
+Disables Hugging Face's Xet backend to avoid the 401 error on large
+multi-chunk downloads.
+
+Run with:
+    export HF_HUB_DISABLE_XET=1
+    export HF_TOKEN=hf_...
+    python scripts/populate_from_hf.py
 """
 
+import os
 import sys
 from pathlib import Path
+
+# Disable Xet BEFORE importing huggingface_hub
+os.environ["HF_HUB_DISABLE_XET"] = "1"
 
 # Ensure backend/ is on sys.path so `from app...` works
 BACKEND_DIR = Path(__file__).resolve().parent.parent
@@ -15,6 +26,7 @@ import random
 from datasets import load_dataset
 
 from app.database import SessionLocal
+from app.models.order import Order, OrderItem
 from app.models.product import Product
 
 NUM_PRODUCTS = 150
@@ -33,11 +45,13 @@ CATEGORY_MAP = {
 
 
 def main():
-    print("📥 Loading dataset...")
+    print("📥 Loading HIGH-RESOLUTION dataset (900x1200)...")
+    print("   First run downloads ~6.5 GB. Be patient.")
+    print()
+
     dataset = load_dataset(
-        "ashraq/fashion-product-images-small",
+        "benitomartin/fashion-product-images-small-900x1200",
         split="train",
-        trust_remote_code=True,
     )
     print(f"✅ Loaded {len(dataset)} rows")
 
@@ -47,9 +61,20 @@ def main():
 
     db = SessionLocal()
     try:
-        deleted = db.query(Product).delete()
+        # Reset the product ID sequence so new products start from 1
+        from sqlalchemy import text
+
+        db.execute(text("ALTER SEQUENCE products_id_seq RESTART WITH 1"))
         db.commit()
-        print(f"🗑️  Deleted {deleted} existing products")
+
+        # Delete in FK-safe order: order_items → orders → products
+        oi_deleted = db.query(OrderItem).delete()
+        o_deleted = db.query(Order).delete()
+        p_deleted = db.query(Product).delete()
+        db.commit()
+        print(
+            f"🗑️  Deleted {oi_deleted} order items, {o_deleted} orders, {p_deleted} products"
+        )
 
         created = 0
         for idx in indices:
@@ -68,7 +93,7 @@ def main():
             filename = f"product_{created + 1}.jpg"
             filepath = UPLOAD_DIR / filename
             try:
-                row["image"].convert("RGB").save(filepath, "JPEG", quality=85)
+                row["image"].convert("RGB").save(filepath, "JPEG", quality=90)
             except Exception as e:
                 print(f"   Skipping {name}: {e}")
                 continue
@@ -99,7 +124,7 @@ def main():
                 print(f"   Created {created}/{NUM_PRODUCTS}")
 
         db.commit()
-        print(f"\n✅ Done! Created {created} products with matching images")
+        print(f"\n✅ Done! Created {created} products with high-res images")
 
     finally:
         db.close()
