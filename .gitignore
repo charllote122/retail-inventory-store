@@ -10,10 +10,21 @@ __pycache__/
 *.pkl
 .pytest_cache/
 .ipynb_checkpoints/
+.coverage
+coverage.xml
 
 # Data (regenerate with generator)
 ml/data/raw/*.csv
 ml/data/processed/*.csv
+
+# Uploaded media
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Local databases / dumps
+*.db
+*.sqlite3
+*.sql
 
 # Node
 node_modules/
@@ -24,6 +35,10 @@ frontend/dist/
 .env
 .env.local
 .env.*.local
+backend/.env
+backend/.env.*
+frontend/.env
+frontend/.env.*
 
 # IDE
 .vscode/

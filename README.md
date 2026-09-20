@@ -1,55 +1,62 @@
 # 🏪 Retail SaaS — Multi-Tenant E-Commerce Platform with AI Demand Forecasting
 
-A production-grade SaaS platform inspired by Shopify. Merchants launch their own storefront, manage inventory, and see **AI-powered demand forecasts** for every product. Customers browse, cart, and checkout with **real Stripe payments**.
+A production-grade SaaS platform inspired by Shopify. Merchants launch their own storefront, manage inventory, and see AI-powered demand forecasts for every product. Customers browse, cart, and checkout with Stripe payments.
 
-**Built as a portfolio project** demonstrating full-stack engineering, multi-tenant architecture, JWT auth, ML integration, and payment processing.
+This project is designed as a portfolio-grade system that blends full-stack engineering, SaaS architecture, ML forecasting, and payment processing. It now also includes production hardening patterns such as migration support, validated environment configuration, rate limiting, audit logging, and stronger webhook verification.
 
 ---
 
 ## 🎯 Features
 
 ### For Merchants
-- ✅ Register and get a **unique storefront URL** (`/store/your-store-name`)
-- ✅ **Product CRUD** — add, edit, delete products with image upload
-- ✅ **AI demand forecasts** — 7-day predictions per product (XGBoost)
-- ✅ **Low-stock alerts** and inventory tracking
-- ✅ **Order management** — see incoming orders, update status
-- ✅ **Complete isolation** — merchants can never see each other's data
+- Register and get a unique storefront URL
+- Product CRUD with image upload
+- AI demand forecasts for inventory planning
+- Low-stock alerts and inventory tracking
+- Order management and fulfillment visibility
+- Tenant isolation between merchant accounts
 
 ### For Customers
-- ✅ Browse any store's public catalog (no login required)
-- ✅ **Search + filter + sort** products
-- ✅ **Shopping cart** with localStorage persistence
-- ✅ **Secure Stripe Checkout** with webhook confirmation
-- ✅ Cross-store shopping — one account, any store
+- Browse any public storefront
+- Search, filter, and sort products
+- Persistent cart experience
+- Secure Stripe Checkout flow
+- Cross-store shopping in one customer account
 
 ### Platform-Level
-- ✅ **Multi-tenant architecture** with row-level isolation
-- ✅ **Role-based access control** (JWT with `role` claim)
-- ✅ **Real payment processing** (Stripe Checkout + webhooks)
-- ✅ **AI-powered insights** via a trained XGBoost model
-- ✅ **Responsive design** — mobile-first, works on any screen
+- Multi-tenant architecture with scoped access control
+- JWT-based RBAC
+- Stripe Checkout and webhook confirmation
+- XGBoost-based demand predictions
+- Responsive React UI
+- Hardened config and security defaults
 
 ---
 
-## 🏗️ Architecture
+## 🛡️ Production Hardening Included
 
+The project now includes the following operational improvements:
 
-
+- Database migrations with Alembic support
+- Stronger environment validation in the backend settings layer
+- Rate limiting for API endpoints using SlowAPI
+- Request audit logging for operational visibility
+- Stricter Stripe webhook signature verification and safer error handling
+- CI/CD workflow checks for backend and frontend validation
 
 ---
 
-## 🛠️ Tech Stack
+## 🏗️ Tech Stack
 
 | Layer | Technology |
 | :--- | :--- |
-| **Frontend** | React 19, Vite, Tailwind CSS v4, React Router v7, Axios |
-| **Backend** | FastAPI, Python 3.13, Pydantic v2, Uvicorn |
-| **Database** | PostgreSQL 16, SQLAlchemy 2.0 |
-| **Auth** | JWT (python-jose), bcrypt |
-| **ML** | XGBoost, scikit-learn, Pandas, NumPy, SHAP |
-| **Payments** | Stripe Checkout + Webhooks |
-| **Dev Tools** | Stripe CLI (local webhook forwarding) |
+| Frontend | React 19, Vite, Tailwind CSS v4, React Router v7, Axios |
+| Backend | FastAPI, Python 3.13, Pydantic v2, Uvicorn |
+| Database | PostgreSQL 16, SQLAlchemy 2.0 |
+| Auth | JWT, bcrypt |
+| ML | XGBoost, scikit-learn, Pandas, NumPy, SHAP |
+| Payments | Stripe Checkout + Webhooks |
+| DevOps | Alembic, GitHub Actions, SlowAPI |
 
 ---
 
@@ -59,140 +66,149 @@ A production-grade SaaS platform inspired by Shopify. Merchants launch their own
 - Python 3.13+
 - Node.js 18+
 - PostgreSQL 16+
-- Stripe account (test mode)
+- Stripe account with test keys
 
 ### 1. Clone the repo
 
 ```bash
 git clone https://github.com/charllote122/retail-inventory-store.git
 cd retail-inventory-store
+```
 
-Backend
+### 2. Backend setup
+
+```bash
 cd backend
-python -m venv venv
-source venv/Scripts/activate    # Windows
-# or: source venv/bin/activate  # Mac/Linux
-
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
+cp .env.example .env
+```
 
-Create backend/.env:
+Then set your values in `backend/.env`:
 
+```env
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/retail_saas
-SECRET_KEY=change-this-to-a-random-48-char-string
+SECRET_KEY=replace-with-a-long-random-secret-key-at-least-32-characters
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=480
 APP_NAME=Retail SaaS
 DEBUG=True
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_SECRET_KEY=sk_test_your_key_here
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
+ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+```
 
 Create the database:
 
-psql -U postgres -c "CREATE DATABASE retail_saas;"
+```bash
+createdb retail_saas
+```
 
-Run the backend
+Run the backend:
 
+```bash
 python -m uvicorn app.main:app --reload --port 8000
-Backend runs at http://localhost:8000 · API docs at http://localhost:8000/docs
+```
 
-Frontend setup
+Backend docs: http://localhost:8000/docs
 
-bash
+### 3. Frontend setup
+
+```bash
 cd frontend
 npm install
-Create frontend/.env:
-
-env
-VITE_API_URL=http://localhost:8000
-Run the frontend:
-
-bash
+cp .env.example .env
 npm run dev
+```
+
 Frontend runs at http://localhost:5173
 
-Project structure
+---
 
+## 🧬 Database Migrations
+
+This project includes Alembic support for schema evolution.
+
+```bash
+cd backend
+alembic revision -m "initial_schema"
+alembic upgrade head
+```
+
+If you are bootstrapping from scratch, the app still runs `Base.metadata.create_all()` in development mode, but Alembic is the preferred path for production and iteration.
+
+---
+
+## 🔒 Security and Reliability Notes
+
+- Env values are validated at startup for required keys and safe formats.
+- CORS origins are derived from config instead of being hardcoded in multiple places.
+- Request rate limits help protect public endpoints.
+- Audit logs record request metadata for debugging and operational review.
+- Stripe webhook payloads are verified using the signature and validated before order updates.
+
+---
+
+## 📁 Project Structure
+
+```text
 retail_inventory_store/
+├── .github/
+│   └── workflows/
+│       └── ci.yml
 ├── backend/
+│   ├── alembic/
+│   │   ├── versions/
+│   │   ├── env.py
+│   │   └── script.py.mako
 │   ├── app/
-│   │   ├── api/              # Route handlers
-│   │   │   ├── auth.py             # Merchant auth
-│   │   │   ├── customers.py        # Customer auth
-│   │   │   ├── products.py         # Product CRUD + upload
-│   │   │   ├── storefront.py       # Public store endpoints
-│   │   │   ├── orders.py           # Orders
-│   │   │   ├── predictions.py      # ML forecasts
-│   │   │   └── stripe_api.py       # Payment + webhooks
+│   │   ├── api/
 │   │   ├── core/
-│   │   │   ├── config.py           # Env loading
-│   │   │   ├── security.py         # JWT + bcrypt
-│   │   │   └── stripe.py           # Stripe client
-│   │   ├── models/            # SQLAlchemy models
-│   │   ├── schemas/           # Pydantic schemas
+│   │   ├── models/
+│   │   ├── schemas/
 │   │   ├── services/
-│   │   │   └── ml_service.py       # ML inference wrapper
 │   │   ├── database.py
-│   │   └── main.py
+│   │   ├── main.py
+│   │   └── __init__.py
 │   ├── scripts/
-│   │   └── populate_from_hf.py     # Demo data seeder
-│   ├── uploads/               # Uploaded product images
-│   └── requirements.txt
-│
+│   ├── .env.example
+│   ├── alembic.ini
+│   ├── requirements.txt
+│   └── uploads/
 ├── frontend/
 │   ├── src/
-│   │   ├── api/
-│   │   │   ├── client.js           # Customer API + JWT
-│   │   │   └── merchantClient.js   # Merchant API + JWT
-│   │   ├── components/
-│   │   │   ├── Header.jsx
-│   │   │   ├── Footer.jsx
-│   │   │   ├── Layout.jsx
-│   │   │   └── Skeleton.jsx
-│   │   ├── context/
-│   │   │   ├── AuthContext.jsx          # Customer
-│   │   │   ├── MerchantAuthContext.jsx  # Merchant
-│   │   │   └── CartContext.jsx
-│   │   ├── pages/
-│   │   │   ├── Home.jsx
-│   │   │   ├── About.jsx
-│   │   │   ├── Storefront.jsx
-│   │   │   ├── ProductDetail.jsx
-│   │   │   ├── Cart.jsx
-│   │   │   ├── Login.jsx
-│   │   │   ├── Success.jsx
-│   │   │   ├── NotFound.jsx
-│   │   │   ├── MerchantLogin.jsx
-│   │   │   └── MerchantDashboard.jsx
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   └── package.json
-│
+│   ├── .env.example
+│   ├── package.json
+│   └── vite.config.js
 ├── ml/
-│   ├── data/
-│   │   ├── raw/                # Generated CSVs
-│   │   └── processed/          # Feature-engineered
-│   ├── models/
-│   │   └── demand_model.pkl    # Trained XGBoost
 │   ├── src/
-│   │   ├── data_generator.py   # Synthetic retail simulator
-│   │   ├── preprocess.py       # Feature engineering
-│   │   ├── train.py            # XGBoost training
-│   │   ├── predict.py          # 7-day forecasting
-│   │   └── explain.py          # SHAP explanations
+│   ├── data/
 │   └── requirements.txt
-│
 ├── .gitignore
-└── README.md
+├── README.md
+└── requirements.txt
+```
 
-The ML Model
-Data Simulation
-Instead of using Kaggle data, I built a custom synthetic retail simulator (ml/src/data_generator.py) that produces:
+---
 
-5 merchants × 200 products = 1,000 products
+## 🤖 ML Model
 
-730 days of sales history = 730,000 rows
+The project uses a synthetic retail simulator rather than public Kaggle data. The generator creates a realistic dataset with vendor and seasonality patterns, stockouts, promotions, and multi-store demand behavior.
 
-Realistic features: weekly/yearly seasonality, promotions, stockouts with lead-time restocking
+This supports a forecasting flow for next-step inventory planning and low-stock alerts.
 
-Stockout rate: ~1.8% (realistic)
+---
+
+## ✅ CI/CD Checks
+
+The repository includes a GitHub Actions workflow that validates:
+
+- backend dependency installation
+- Python syntax and compile checks
+- frontend dependency installation
+- Vite production build
+- lint checks for the frontend
+
+This gives a baseline pipeline for code quality and regression prevention.
 

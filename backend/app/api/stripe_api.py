@@ -108,56 +108,63 @@ async def stripe_webhook(
     request: Request,
     stripe_signature: str = Header(None, alias="stripe-signature"),
 ):
-    """
-    Stripe webhook.
-
-    1. Verify signature (proves payload came from Stripe).
-    2. Parse payload JSON directly (avoids StripeObject quirks in SDK v15).
-    3. Update order status if pending.
-    """
+    """Verify Stripe signatures and update paid orders with safe error handling."""
     payload = await request.body()
     endpoint_secret = settings.stripe_webhook_secret
 
+    if not stripe_signature:
+        raise HTTPException(400, "Missing Stripe signature header")
+    if not endpoint_secret:
+        raise HTTPException(500, "Stripe webhook secret is not configured")
+
     stripe = get_stripe()
 
-    # 1. Signature verification — ensures payload is authentic
     try:
-        stripe.Webhook.construct_event(payload, stripe_signature, endpoint_secret)
+        event = stripe.Webhook.construct_event(payload, stripe_signature, endpoint_secret)
     except ValueError:
         raise HTTPException(400, "Invalid payload")
-    except Exception as e:
-        raise HTTPException(400, f"Invalid signature: {str(e)}")
+    except stripe.error.SignatureVerificationError as exc:
+        raise HTTPException(400, f"Invalid signature: {str(exc)}") from exc
+    except Exception as exc:
+        raise HTTPException(400, f"Webhook verification failed: {str(exc)}") from exc
 
-    # 2. Parse payload as plain JSON
     try:
-        event = json.loads(payload.decode("utf-8"))
-    except Exception as e:
-        raise HTTPException(400, f"JSON parse error: {str(e)}")
+        event_payload = json.loads(payload.decode("utf-8"))
+    except Exception as exc:
+        raise HTTPException(400, f"JSON parse error: {str(exc)}") from exc
 
-    event_type = event.get("type")
-    print(f"📩 Webhook received: {event_type}")
+    event_type = event_payload.get("type")
 
     if event_type == "checkout.session.completed":
-        session = event.get("data", {}).get("object", {}) or {}
+        session = event_payload.get("data", {}).get("object", {}) or {}
         metadata = session.get("metadata", {}) or {}
         order_id = metadata.get("order_id")
 
-        print(f"📩 Order ID from metadata: {order_id}")
+        if not order_id:
+            raise HTTPException(400, "Missing order_id in Stripe session metadata")
 
-        if order_id:
-            db = SessionLocal()
-            try:
-                order = db.query(Order).filter(Order.id == int(order_id)).first()
-                if order and order.status == "pending":
-                    order.status = "paid"
-                    order.stripe_payment_intent_id = session.get("payment_intent")
-                    db.commit()
-                    print(f"✅ Order #{order.id} marked as PAID")
-                else:
-                    print(f"⚠️  Order #{order_id} not found or already paid")
-            finally:
-                db.close()
-        else:
-            print("⚠️  No order_id in metadata")
+        try:
+            order_id_int = int(order_id)
+        except (TypeError, ValueError) as exc:
+            raise HTTPException(400, "Invalid order_id in Stripe session metadata") from exc
 
-    return {"received": True}
+        db = SessionLocal()
+        try:
+            order = db.query(Order).filter(Order.id == order_id_int).first()
+            if order is None:
+                raise HTTPException(404, f"Order #{order_id_int} not found")
+            if order.status == "pending":
+                order.status = "paid"
+                order.stripe_payment_intent_id = session.get("payment_intent")
+                db.commit()
+            else:
+                return {"received": True, "status": order.status}
+        except HTTPException:
+            raise
+        except Exception as exc:
+            db.rollback()
+            raise HTTPException(500, f"Failed to update order: {str(exc)}") from exc
+        finally:
+            db.close()
+
+    return {"received": True, "type": event_type}
