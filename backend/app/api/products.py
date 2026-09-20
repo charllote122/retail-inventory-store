@@ -5,7 +5,17 @@ Merchant-scoped: every endpoint filters by the authenticated
 merchant's ID. Merchant A can never see or modify Merchant B's products.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+import uuid
+from pathlib import Path
+
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    status,
+    UploadFile,
+    File,
+)
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_merchant
@@ -19,6 +29,13 @@ from app.schemas.product import (
 )
 
 router = APIRouter(prefix="/api/products", tags=["products"])
+
+
+# ---------- Image upload config ----------
+UPLOAD_DIR = Path("uploads")
+UPLOAD_DIR.mkdir(exist_ok=True)
+ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
 
 
 def _get_owned_product(product_id: int, merchant_id: int, db: Session) -> Product:
@@ -38,6 +55,45 @@ def _get_owned_product(product_id: int, merchant_id: int, db: Session) -> Produc
             detail="Product not found",
         )
     return product
+
+
+# ---------- Image upload (MUST be before /{product_id}) ----------
+
+
+@router.post("/upload-image")
+async def upload_product_image(
+    file: UploadFile = File(...),
+    current: Merchant = Depends(get_current_merchant),
+):
+    """
+    Upload a product image. Returns the URL to use as `image_url`
+    when creating or updating a product.
+    """
+    # Validate extension
+    ext = Path(file.filename or "").suffix.lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            400,
+            f"File type not allowed. Use one of: {', '.join(sorted(ALLOWED_EXTENSIONS))}",
+        )
+
+    # Read and validate size
+    contents = await file.read()
+    if len(contents) > MAX_FILE_SIZE:
+        raise HTTPException(400, "File too large (max 5 MB)")
+
+    # Generate unique filename
+    filename = f"{uuid.uuid4().hex}{ext}"
+    filepath = UPLOAD_DIR / filename
+
+    # Write to disk
+    with open(filepath, "wb") as f:
+        f.write(contents)
+
+    return {"image_url": f"/uploads/{filename}"}
+
+
+# ---------- CRUD ----------
 
 
 @router.post("", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)

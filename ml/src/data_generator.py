@@ -20,7 +20,7 @@ random.seed(42)
 # ---------- Configuration ----------
 NUM_MERCHANTS = 5
 NUM_CUSTOMERS = 200
-NUM_PRODUCTS_PER_MERCHANT = 30
+NUM_PRODUCTS_PER_MERCHANT = 200  # ← increased from 30 (covers DB product IDs 3-152)
 DAYS_OF_HISTORY = 730  # 2 years
 
 # Restocking behavior
@@ -105,14 +105,7 @@ def generate_products(merchants_df):
 
 
 def simulate_sales(products_df, merchants_df):
-    """
-    Simulate realistic daily sales.
-
-    FIX APPLIED: Reduced seasonality multipliers to realistic levels.
-    Real-world holiday/weekend spikes are 15-25%, not 40-60%.
-    This forces the model to learn from sales history (lags, rolling)
-    rather than memorizing the calendar.
-    """
+    """Simulate realistic daily sales with realistic seasonality."""
     records = []
     start_date = datetime.now() - timedelta(days=DAYS_OF_HISTORY)
 
@@ -126,7 +119,7 @@ def simulate_sales(products_df, merchants_df):
         day_of_week = current_date.weekday()
         month = current_date.month
 
-        # --- REALISTIC multipliers (was 1.4/1.6/1.2) ---
+        # Realistic multipliers
         weekend_multiplier = 1.15 if day_of_week >= 5 else 1.0
         holiday_multiplier = 1.25 if month in [11, 12] else 1.0
         summer_multiplier = 1.10 if month in [6, 7, 8] else 1.0
@@ -211,7 +204,7 @@ def main():
     products = generate_products(merchants)
     products.to_csv("data/raw/products.csv", index=False)
 
-    print("💰 Simulating sales (this may take 30-60 seconds)...")
+    print("💰 Simulating sales (this may take 2-3 minutes)...")
     sales = simulate_sales(products, merchants)
     sales.to_csv("data/raw/sales_history.csv", index=False)
 

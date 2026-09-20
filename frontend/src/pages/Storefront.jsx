@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router-dom'
 import api from '../api/client'
 import { useCart } from '../context/CartContext'
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+
 export default function Storefront() {
     const { slug } = useParams()
     const [store, setStore] = useState(null)
@@ -17,7 +19,7 @@ export default function Storefront() {
 
         Promise.all([
             api.get(`/api/store/${slug}`),
-            api.get(`/api/store/${slug}/products`),
+            api.get(`/api/store/${slug}/products?limit=500`),  // ← fetch all
         ])
             .then(([storeRes, productsRes]) => {
                 setStore(storeRes.data)
@@ -86,12 +88,13 @@ export default function Storefront() {
                                 className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden flex flex-col"
                             >
                                 <Link to={`/store/${slug}/product/${product.id}`}>
-                                    <div className="h-48 bg-gray-100 flex items-center justify-center">
+                                    <div className="h-48 bg-gray-100 flex items-center justify-center overflow-hidden">
                                         {product.image_url ? (
                                             <img
-                                                src={product.image_url}
+                                                src={`${API_URL}${product.image_url}`}    // ← FIX
                                                 alt={product.name}
                                                 className="h-full w-full object-cover"
+                                                onError={(e) => { e.target.style.display = 'none' }}
                                             />
                                         ) : (
                                             <span className="text-gray-400 text-sm">No image</span>
@@ -104,7 +107,7 @@ export default function Storefront() {
                                     </p>
                                     <Link
                                         to={`/store/${slug}/product/${product.id}`}
-                                        className="font-semibold text-gray-900 mb-2 hover:text-blue-600"
+                                        className="font-semibold text-gray-900 mb-2 hover:text-blue-600 line-clamp-2"
                                     >
                                         {product.name}
                                     </Link>
@@ -117,7 +120,7 @@ export default function Storefront() {
                                             disabled={product.stock_quantity === 0}
                                             className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition"
                                         >
-                                            {product.stock_quantity === 0 ? 'Out' : 'Add to cart'}
+                                            {product.stock_quantity === 0 ? 'Out' : 'Add'}
                                         </button>
                                     </div>
                                 </div>
