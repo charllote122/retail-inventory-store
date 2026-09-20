@@ -1,48 +1,70 @@
 # 🏪 Retail SaaS — Multi-Tenant E-Commerce Platform with AI Demand Forecasting
 
+# 🏪 Retail SaaS — Multi-Tenant E-Commerce Platform with AI Demand Forecasting
+
 A production-grade SaaS platform inspired by Shopify. Merchants launch their own storefront, manage inventory, and see AI-powered demand forecasts for every product. Customers browse, cart, and checkout with Stripe payments.
 
-This project is designed as a portfolio-grade system that blends full-stack engineering, SaaS architecture, ML forecasting, and payment processing. It now also includes production hardening patterns such as migration support, validated environment configuration, rate limiting, audit logging, and stronger webhook verification.
+Built as a portfolio project demonstrating full-stack engineering, multi-tenant architecture, ML forecasting, payment processing, and production hardening.
 
 ---
 
 ## 🎯 Features
 
 ### For Merchants
-- Register and get a unique storefront URL
+- Register and get a unique storefront URL (`/store/your-store-name`)
 - Product CRUD with image upload
 - AI demand forecasts for inventory planning
 - Low-stock alerts and inventory tracking
 - Order management and fulfillment visibility
-- Tenant isolation between merchant accounts
+- Complete tenant isolation between merchant accounts
 
 ### For Customers
 - Browse any public storefront
-- Search, filter, and sort products
+- Search, filter by category, and sort products
 - Persistent cart experience
 - Secure Stripe Checkout flow
 - Cross-store shopping in one customer account
 
 ### Platform-Level
 - Multi-tenant architecture with scoped access control
-- JWT-based RBAC
-- Stripe Checkout and webhook confirmation
-- XGBoost-based demand predictions
-- Responsive React UI
+- JWT-based role access control (`merchant` vs `customer`)
+- Stripe Checkout with webhook confirmation
+- XGBoost-based demand predictions served via API
+- Responsive React UI (mobile + desktop)
 - Hardened config and security defaults
+
+---
+
+## 📸 Screenshots
+
+### Home — Multi-tenant store directory
+![Home page with store cards](docs/screenshots/01-home.png)
+
+### Storefront — Search, filters, and product grid
+![Storefront with search and category filters](docs/screenshots/02-storefront.png)
+
+### Product Detail — Hover-to-zoom on high-res images
+![Product detail page](docs/screenshots/03-product-detail.png)
+
+### Merchant Dashboard — AI demand forecasts for every product
+![Merchant dashboard with AI predictions](docs/screenshots/04-dashboard.png)
+
+### Stripe Checkout — Real payment flow
+![Stripe checkout page](docs/screenshots/05-stripe-checkout.png)
+
+### Payment Success — Order confirmed via webhook
+![Payment success page](docs/screenshots/06-success.png)
 
 ---
 
 ## 🛡️ Production Hardening Included
 
-The project now includes the following operational improvements:
-
-- Database migrations with Alembic support
-- Stronger environment validation in the backend settings layer
-- Rate limiting for API endpoints using SlowAPI
-- Request audit logging for operational visibility
-- Stricter Stripe webhook signature verification and safer error handling
-- CI/CD workflow checks for backend and frontend validation
+- **Database migrations** with Alembic support
+- **Environment validation** in the backend settings layer
+- **Rate limiting** for API endpoints using SlowAPI
+- **Structured config** with Pydantic Settings
+- **Strict Stripe webhook verification** with signature validation
+- **CI workflow** for backend and frontend validation via GitHub Actions
 
 ---
 
@@ -66,14 +88,13 @@ The project now includes the following operational improvements:
 - Python 3.13+
 - Node.js 18+
 - PostgreSQL 16+
-- Stripe account with test keys
+- Stripe account (test mode)
 
 ### 1. Clone the repo
 
 ```bash
 git clone https://github.com/charllote122/retail-inventory-store.git
 cd retail-inventory-store
-```
 
 ### 2. Backend setup
 
@@ -187,7 +208,7 @@ retail_inventory_store/
 │   └── requirements.txt
 ├── .gitignore
 ├── README.md
-└── requirements.txt
+
 ```
 
 ---
