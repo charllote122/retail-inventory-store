@@ -5,6 +5,8 @@ import Cart from './pages/Cart'
 import Login from './pages/Login'
 import Success from './pages/Success'
 import NotFound from './pages/NotFound'
+import MerchantLogin from './pages/MerchantLogin'
+import MerchantDashboard from './pages/MerchantDashboard'
 
 export default function App() {
   return (
@@ -14,6 +16,8 @@ export default function App() {
       <Route path="/cart" element={<Cart />} />
       <Route path="/success" element={<Success />} />
       <Route path="/store/:slug" element={<Storefront />} />
+      <Route path="/merchant/login" element={<MerchantLogin />} />
+      <Route path="/dashboard" element={<MerchantDashboard />} />
       <Route path="/404" element={<NotFound />} />
       <Route path="*" element={<Navigate to="/404" replace />} />
     </Routes>
