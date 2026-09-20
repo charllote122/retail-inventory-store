@@ -1,0 +1,17 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.env
+.env.local
+uploads/*
+!uploads/.gitkeep
+*.db
+*.sqlite3
+.git/
+.gitignore
+README.md
+.DS_Store

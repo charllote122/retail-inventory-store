@@ -1,5 +1,6 @@
 """Application configuration loaded from .env."""
 
+import json
 from typing import Any
 
 from pydantic import Field, field_validator
@@ -37,13 +38,35 @@ class Settings(BaseSettings):
     @field_validator("allowed_origins", mode="before")
     @classmethod
     def parse_allowed_origins(cls, value: Any) -> list[str]:
+        """
+        Accept both:
+        - JSON array: '["http://a.com","http://b.com"]'
+        - Comma-separated: "http://a.com,http://b.com"
+        """
         if value is None or value == "":
             return []
-        if isinstance(value, str):
-            return [origin.strip() for origin in value.split(",") if origin.strip()]
+
         if isinstance(value, list):
-            return [str(origin).strip() for origin in value if str(origin).strip()]
-        raise TypeError("allowed_origins must be a comma-separated string or list of URLs")
+            return [str(o).strip() for o in value if str(o).strip()]
+
+        if isinstance(value, str):
+            value = value.strip()
+
+            # Try JSON array format first
+            if value.startswith("[") and value.endswith("]"):
+                try:
+                    parsed = json.loads(value)
+                    if isinstance(parsed, list):
+                        return [str(o).strip() for o in parsed if str(o).strip()]
+                except json.JSONDecodeError:
+                    pass
+
+            # Fall back to comma-separated
+            return [o.strip() for o in value.split(",") if o.strip()]
+
+        raise TypeError(
+            "allowed_origins must be a comma-separated string or JSON array"
+        )
 
     @field_validator("database_url")
     @classmethod
@@ -56,7 +79,7 @@ class Settings(BaseSettings):
     @classmethod
     def validate_stripe_secret_key(cls, value: str) -> str:
         if value and not value.startswith("sk_"):
-            raise ValueError("STRIPE_SECRET_KEY must start with 'sk_' in test or live mode")
+            raise ValueError("STRIPE_SECRET_KEY must start with 'sk_'")
         return value
 
     @field_validator("stripe_webhook_secret")

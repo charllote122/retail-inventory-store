@@ -48,3 +48,9 @@ frontend/.env.*
 # OS
 .DS_Store
 Thumbs.db
+
+# Docker
+.env
+docker-compose.override.yml
+backend/uploads/*
+!backend/uploads/.gitkeep
