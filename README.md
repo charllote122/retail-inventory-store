@@ -2,7 +2,10 @@
 
 A production-grade SaaS platform inspired by Shopify. Merchants launch their own storefront, manage inventory, and see AI-powered demand forecasts for every product. Customers browse, cart, and checkout with Stripe payments.
 
-Built as a portfolio project demonstrating full-stack engineering, multi-tenant architecture, ML forecasting, payment processing, and production hardening.
+**🔴 Live Demo:** [retail-inventory-store.vercel.app](https://retail-inventory-store.vercel.app)
+**🔵 API Docs:** [retail-inventory-store.onrender.com/docs](https://retail-inventory-store.onrender.com/docs)
+
+> ⚠️ The backend uses Render's free tier, which sleeps after 15 minutes of inactivity. The first request may take 30–60 seconds to wake up.
 
 ---
 
@@ -20,13 +23,13 @@ Built as a portfolio project demonstrating full-stack engineering, multi-tenant 
 - Browse any public storefront
 - Search, filter by category, and sort products
 - Persistent cart experience
-- Secure Stripe Checkout flow
+- Secure Stripe Checkout flow with shipping options
 - Cross-store shopping in one customer account
 
 ### Platform-Level
 - Multi-tenant architecture with scoped access control
 - JWT-based role access control (`merchant` vs `customer`)
-- Stripe Checkout with webhook confirmation
+- Stripe Checkout with verified webhook confirmation
 - XGBoost-based demand predictions served via API
 - Responsive React UI (mobile + desktop)
 - Hardened config and security defaults
@@ -55,6 +58,31 @@ Built as a portfolio project demonstrating full-stack engineering, multi-tenant 
 
 ---
 
+## 🌐 Live Deployment
+
+| Component | Platform | URL |
+| :--- | :--- | :--- |
+| **Frontend** | Vercel | [retail-inventory-store.vercel.app](https://retail-inventory-store.vercel.app) |
+| **Backend** | Render | [retail-inventory-store.onrender.com](https://retail-inventory-store.onrender.com) |
+| **API Docs** | Render (Swagger) | [retail-inventory-store.onrender.com/docs](https://retail-inventory-store.onrender.com/docs) |
+| **Database** | Render Postgres | Managed PostgreSQL 16 (Oregon) |
+
+### Try It Live
+
+1. **As a customer:** [Visit the demo store →](https://retail-inventory-store.vercel.app/store/paytest)
+   - Add products to cart
+   - Sign in or create an account
+   - Checkout with Stripe test card: `4242 4242 4242 4242`
+
+2. **As a merchant:** [Open your store →](https://retail-inventory-store.vercel.app/merchant/login)
+   - Register a new merchant account
+   - Add products with images
+   - View AI demand forecasts per product
+
+3. **Explore the API:** [Swagger UI →](https://retail-inventory-store.onrender.com/docs)
+
+---
+
 ## 🛡️ Production Hardening Included
 
 - **Database migrations** with Alembic support
@@ -63,6 +91,7 @@ Built as a portfolio project demonstrating full-stack engineering, multi-tenant 
 - **Structured config** with Pydantic Settings
 - **Strict Stripe webhook verification** with signature validation
 - **CI workflow** for backend and frontend validation via GitHub Actions
+- **Docker** for local development (backend, frontend, database)
 
 ---
 
@@ -76,17 +105,18 @@ Built as a portfolio project demonstrating full-stack engineering, multi-tenant 
 | Auth | JWT, bcrypt |
 | ML | XGBoost, scikit-learn, Pandas, NumPy, SHAP |
 | Payments | Stripe Checkout + Webhooks |
-| DevOps | Alembic, GitHub Actions, SlowAPI |
+| DevOps | Alembic, GitHub Actions, SlowAPI, Docker |
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start (Local Development)
 
 ### Prerequisites
 - Python 3.13+
 - Node.js 18+
 - PostgreSQL 16+
 - Stripe account (test mode)
+- Docker Desktop (optional, for the Docker workflow)
 
 ### 1. Clone the repo
 
@@ -116,13 +146,13 @@ DEBUG=True
 STRIPE_SECRET_KEY=sk_test_your_key_here
 STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
 ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+FRONTEND_URL=http://localhost:5173
 ```
 
 Create the database:
 
 ```bash
-createdb retail_saas
-```
+psql -U postgres -c "CREATE DATABASE retail_saas;"```
 
 Run the backend:
 
@@ -230,4 +260,7 @@ The repository includes a GitHub Actions workflow that validates:
 - lint checks for the frontend
 
 This gives a baseline pipeline for code quality and regression prevention.
+
+
+
 

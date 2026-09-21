@@ -38,21 +38,15 @@ def create_order(
     db: Session = Depends(get_db),
     customer: Customer = Depends(get_current_customer),
 ):
-    """
-    Place an order. Groups items by merchant — one order per merchant.
-
-    For simplicity, this MVP supports one merchant per order.
-    """
+    """Place an order. Stock is decremented immediately."""
     if not payload.items:
         raise HTTPException(400, "Order must contain at least one item")
 
-    # Fetch all products in one query
     product_ids = [i.product_id for i in payload.items]
     products = {
         p.id: p for p in db.query(Product).filter(Product.id.in_(product_ids)).all()
     }
 
-    # Validate: every product exists, is active, has stock
     merchant_ids = set()
     total = Decimal("0.00")
     order_items = []
@@ -72,6 +66,7 @@ def create_order(
 
         merchant_ids.add(product.merchant_id)
 
+        # Snapshot the price at purchase time
         line_total = Decimal(product.price_usd) * item.quantity
         total += line_total
 

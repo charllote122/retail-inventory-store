@@ -61,6 +61,47 @@ def create_checkout_session(
             mode="payment",
             success_url=f"{settings.frontend_url}/success?session_id={{CHECKOUT_SESSION_ID}}",
             cancel_url=f"{settings.frontend_url}/cancel",
+            shipping_address_collection={
+                "allowed_countries": [
+                    "US",
+                    "GB",
+                    "DE",
+                    "FR",
+                    "PL",
+                    "EE",
+                    "KE",
+                    "CA",
+                    "AU",
+                    "IN",
+                    "NL",
+                    "ES",
+                    "IT",
+                ],
+            },
+            shipping_options=[
+                {
+                    "shipping_rate_data": {
+                        "type": "fixed_amount",
+                        "fixed_amount": {"amount": 500, "currency": "usd"},
+                        "display_name": "Standard shipping",
+                        "delivery_estimate": {
+                            "minimum": {"unit": "business_day", "value": 5},
+                            "maximum": {"unit": "business_day", "value": 10},
+                        },
+                    },
+                },
+                {
+                    "shipping_rate_data": {
+                        "type": "fixed_amount",
+                        "fixed_amount": {"amount": 1500, "currency": "usd"},
+                        "display_name": "Express shipping",
+                        "delivery_estimate": {
+                            "minimum": {"unit": "business_day", "value": 2},
+                            "maximum": {"unit": "business_day", "value": 3},
+                        },
+                    },
+                },
+            ],
             metadata={
                 "order_id": str(order.id),
                 "customer_id": str(customer.id),

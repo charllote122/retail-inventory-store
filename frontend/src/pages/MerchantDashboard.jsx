@@ -135,6 +135,11 @@ export default function MerchantDashboard() {
         )
         : products
 
+    // Compute low-stock count
+    const lowStockCount = products.filter(
+        (p) => p.stock_quantity <= p.low_stock_threshold
+    ).length
+
     if (authLoading || !merchant) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -200,7 +205,8 @@ export default function MerchantDashboard() {
             </header>
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
+                {/* Stats grid — now with Low stock card */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
                     <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 sm:p-5">
                         <p className="text-[10px] sm:text-xs uppercase tracking-wide text-gray-500">Products</p>
                         <p className="text-2xl sm:text-3xl font-bold text-gray-900">{products.length}</p>
@@ -211,8 +217,17 @@ export default function MerchantDashboard() {
                             {products.reduce((s, p) => s + p.stock_quantity, 0).toLocaleString()}
                         </p>
                     </div>
-                    <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 sm:p-5 col-span-2 md:col-span-1">
-                        <p className="text-[10px] sm:text-xs uppercase tracking-wide text-gray-500">AI predictions ready</p>
+                    <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 sm:p-5">
+                        <p className="text-[10px] sm:text-xs uppercase tracking-wide text-gray-500">Low stock</p>
+                        <p
+                            className={`text-2xl sm:text-3xl font-bold ${lowStockCount > 0 ? 'text-red-600' : 'text-gray-900'
+                                }`}
+                        >
+                            {lowStockCount}
+                        </p>
+                    </div>
+                    <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 sm:p-5">
+                        <p className="text-[10px] sm:text-xs uppercase tracking-wide text-gray-500">AI predictions</p>
                         <p className="text-2xl sm:text-3xl font-bold text-blue-600">
                             {Object.keys(predictions).length}
                         </p>
