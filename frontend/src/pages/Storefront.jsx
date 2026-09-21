@@ -12,6 +12,12 @@ const normalizeCategory = (c) => {
     return t.charAt(0).toUpperCase() + t.slice(1)
 }
 
+const resolveImageUrl = (url) => {
+    if (!url) return ''
+    if (url.startsWith('http://') || url.startsWith('https://')) return url
+    return `${API_URL}${url}`
+}
+
 export default function Storefront() {
     const { slug } = useParams()
     const [store, setStore] = useState(null)
@@ -152,8 +158,8 @@ export default function Storefront() {
                             key={cat}
                             onClick={() => setActiveCategory(cat)}
                             className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium transition border ${activeCategory === cat
-                                    ? 'bg-slate-900 text-white border-slate-900'
-                                    : 'bg-white text-slate-700 border-slate-300 hover:border-slate-400'
+                                ? 'bg-slate-900 text-white border-slate-900'
+                                : 'bg-white text-slate-700 border-slate-300 hover:border-slate-400'
                                 }`}
                         >
                             {cat}
@@ -194,9 +200,10 @@ export default function Storefront() {
                                 <div className="bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center h-40 sm:h-52 p-4">
                                     {product.image_url ? (
                                         <img
-                                            src={`${API_URL}${product.image_url}`}
+                                            src={resolveImageUrl(product.image_url)}
                                             alt={product.name}
                                             className="max-w-[140px] max-h-[140px] sm:max-w-[180px] sm:max-h-[180px] object-contain bg-white rounded shadow-sm group-hover:scale-105 transition-transform"
+                                            onError={(e) => { e.target.style.display = 'none' }}
                                         />
                                     ) : (
                                         <span className="text-slate-400 text-sm">No image</span>

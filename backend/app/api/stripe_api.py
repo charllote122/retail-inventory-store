@@ -59,8 +59,8 @@ def create_checkout_session(
         session = stripe.checkout.Session.create(
             line_items=line_items,
             mode="payment",
-            success_url="http://localhost:5173/success?session_id={CHECKOUT_SESSION_ID}",
-            cancel_url="http://localhost:5173/cancel",
+            success_url=f"{settings.frontend_url}/success?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{settings.frontend_url}/cancel",
             metadata={
                 "order_id": str(order.id),
                 "customer_id": str(customer.id),
@@ -90,7 +90,6 @@ def get_session_status(session_id: str):
     except Exception as e:
         raise HTTPException(404, f"Session not found: {str(e)}")
 
-    # Stripe SDK v15: use .to_dict() to get a plain dict
     session_dict = session.to_dict()
 
     metadata = session_dict.get("metadata") or {}
@@ -120,7 +119,9 @@ async def stripe_webhook(
     stripe = get_stripe()
 
     try:
-        event = stripe.Webhook.construct_event(payload, stripe_signature, endpoint_secret)
+        event = stripe.Webhook.construct_event(
+            payload, stripe_signature, endpoint_secret
+        )
     except ValueError:
         raise HTTPException(400, "Invalid payload")
     except stripe.error.SignatureVerificationError as exc:
@@ -146,7 +147,9 @@ async def stripe_webhook(
         try:
             order_id_int = int(order_id)
         except (TypeError, ValueError) as exc:
-            raise HTTPException(400, "Invalid order_id in Stripe session metadata") from exc
+            raise HTTPException(
+                400, "Invalid order_id in Stripe session metadata"
+            ) from exc
 
         db = SessionLocal()
         try:

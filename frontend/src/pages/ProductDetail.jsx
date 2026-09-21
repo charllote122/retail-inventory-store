@@ -5,6 +5,12 @@ import { useCart } from '../context/CartContext'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
+const resolveImageUrl = (url) => {
+    if (!url) return ''
+    if (url.startsWith('http://') || url.startsWith('https://')) return url
+    return `${API_URL}${url}`
+}
+
 export default function ProductDetail() {
     const { slug, id } = useParams()
     const { addToCart, itemCount } = useCart()
@@ -15,8 +21,6 @@ export default function ProductDetail() {
     const [error, setError] = useState(null)
     const [quantity, setQuantity] = useState(1)
     const [added, setAdded] = useState(false)
-
-    // Zoom state
     const [zoom, setZoom] = useState(false)
     const [position, setPosition] = useState({ x: 50, y: 50 })
     const imageRef = useRef(null)
@@ -24,7 +28,6 @@ export default function ProductDetail() {
     useEffect(() => {
         setLoading(true)
         setError(null)
-
         Promise.all([
             api.get(`/api/store/${slug}`),
             api.get(`/api/store/${slug}/products/${id}`),
@@ -33,9 +36,7 @@ export default function ProductDetail() {
                 setStore(storeRes.data)
                 setProduct(productRes.data)
             })
-            .catch((err) => {
-                setError(err.response?.data?.detail || 'Product not found')
-            })
+            .catch((err) => setError(err.response?.data?.detail || 'Product not found'))
             .finally(() => setLoading(false))
     }, [slug, id])
 
@@ -103,8 +104,7 @@ export default function ProductDetail() {
             <main className="max-w-6xl mx-auto px-6 py-10">
                 <div className="bg-white rounded-lg shadow overflow-hidden">
                     <div className="grid grid-cols-1 md:grid-cols-2">
-                        {/* Image with hover-zoom */}
-                        <div className="bg-gray-50 flex items-center justify-center min-h-[500px] p-8">
+                        <div className="bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center min-h-[420px] md:min-h-[520px] p-12">
                             {product.image_url ? (
                                 <div
                                     ref={imageRef}
@@ -114,7 +114,7 @@ export default function ProductDetail() {
                                     onMouseMove={handleMouseMove}
                                 >
                                     <img
-                                        src={`${API_URL}${product.image_url}`}
+                                        src={resolveImageUrl(product.image_url)}
                                         alt={product.name}
                                         className="w-full h-full object-contain transition-transform duration-200"
                                         style={{
@@ -123,7 +123,6 @@ export default function ProductDetail() {
                                         }}
                                         onError={(e) => { e.target.style.display = 'none' }}
                                     />
-
                                     {!zoom && (
                                         <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded flex items-center gap-1 pointer-events-none">
                                             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -138,7 +137,6 @@ export default function ProductDetail() {
                             )}
                         </div>
 
-                        {/* Details */}
                         <div className="p-8 md:p-10 flex flex-col">
                             <p className="text-xs uppercase tracking-wide text-gray-500 mb-2">
                                 {product.category}

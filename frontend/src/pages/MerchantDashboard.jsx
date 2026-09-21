@@ -12,6 +12,12 @@ const SUGGESTED_CATEGORIES = [
     'Jewelry', 'Footwear', 'Watches', 'Bags', 'Handbags',
 ]
 
+const resolveImageUrl = (url) => {
+    if (!url) return ''
+    if (url.startsWith('http://') || url.startsWith('https://')) return url
+    return `${API_URL}${url}`
+}
+
 export default function MerchantDashboard() {
     const { merchant, loading: authLoading, logout } = useMerchantAuth()
     const navigate = useNavigate()
@@ -25,7 +31,6 @@ export default function MerchantDashboard() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const [search, setSearch] = useState('')
 
-    // Form state
     const [name, setName] = useState('')
     const [category, setCategory] = useState('Clothing')
     const [price, setPrice] = useState('')
@@ -68,14 +73,12 @@ export default function MerchantDashboard() {
     const handleFileSelect = async (e) => {
         const file = e.target.files?.[0]
         if (!file) return
-
         setPreviewUrl(URL.createObjectURL(file))
         setUploading(true)
         setError(null)
         try {
             const formData = new FormData()
             formData.append('file', file)
-
             const res = await merchantClient.post('/api/products/upload-image', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             })
@@ -125,7 +128,6 @@ export default function MerchantDashboard() {
         navigate('/')
     }
 
-    // Client-side search filter on dashboard
     const filteredProducts = search.trim()
         ? products.filter((p) =>
             p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -143,7 +145,6 @@ export default function MerchantDashboard() {
 
     return (
         <div className="min-h-screen bg-slate-50">
-            {/* Header */}
             <header className="bg-slate-900 text-white sticky top-0 z-30">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
@@ -155,23 +156,14 @@ export default function MerchantDashboard() {
                                 Merchant dashboard · {merchant.store_slug}
                             </p>
                         </div>
-
                         <div className="hidden md:flex items-center gap-4">
-                            <Link
-                                to={`/store/${merchant.store_slug}`}
-                                target="_blank"
-                                className="text-sm text-slate-300 hover:text-white"
-                            >
+                            <Link to={`/store/${merchant.store_slug}`} target="_blank" className="text-sm text-slate-300 hover:text-white">
                                 View storefront ↗
                             </Link>
-                            <button
-                                onClick={handleLogout}
-                                className="text-sm px-3 py-1.5 bg-slate-700 rounded hover:bg-slate-600 transition"
-                            >
+                            <button onClick={handleLogout} className="text-sm px-3 py-1.5 bg-slate-700 rounded hover:bg-slate-600 transition">
                                 Sign out
                             </button>
                         </div>
-
                         <button
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                             className="md:hidden p-2 rounded hover:bg-slate-800 transition"
@@ -186,7 +178,6 @@ export default function MerchantDashboard() {
                             </svg>
                         </button>
                     </div>
-
                     {mobileMenuOpen && (
                         <div className="md:hidden border-t border-slate-700 py-3 space-y-2">
                             <Link
@@ -209,26 +200,19 @@ export default function MerchantDashboard() {
             </header>
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-                {/* Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
                     <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 sm:p-5">
-                        <p className="text-[10px] sm:text-xs uppercase tracking-wide text-gray-500">
-                            Products
-                        </p>
+                        <p className="text-[10px] sm:text-xs uppercase tracking-wide text-gray-500">Products</p>
                         <p className="text-2xl sm:text-3xl font-bold text-gray-900">{products.length}</p>
                     </div>
                     <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 sm:p-5">
-                        <p className="text-[10px] sm:text-xs uppercase tracking-wide text-gray-500">
-                            Total stock
-                        </p>
+                        <p className="text-[10px] sm:text-xs uppercase tracking-wide text-gray-500">Total stock</p>
                         <p className="text-2xl sm:text-3xl font-bold text-gray-900">
                             {products.reduce((s, p) => s + p.stock_quantity, 0).toLocaleString()}
                         </p>
                     </div>
                     <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 sm:p-5 col-span-2 md:col-span-1">
-                        <p className="text-[10px] sm:text-xs uppercase tracking-wide text-gray-500">
-                            AI predictions ready
-                        </p>
+                        <p className="text-[10px] sm:text-xs uppercase tracking-wide text-gray-500">AI predictions ready</p>
                         <p className="text-2xl sm:text-3xl font-bold text-blue-600">
                             {Object.keys(predictions).length}
                         </p>
@@ -241,23 +225,17 @@ export default function MerchantDashboard() {
                     </div>
                 )}
 
-                {/* Products panel */}
                 <div className="bg-white rounded-lg shadow-sm border border-slate-200">
                     <div className="px-4 sm:px-6 py-4 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <h2 className="text-base sm:text-lg font-semibold text-gray-900">
-                            Products
-                        </h2>
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={() => setShowForm(!showForm)}
-                                className="text-xs sm:text-sm px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                            >
-                                {showForm ? 'Cancel' : '+ Add product'}
-                            </button>
-                        </div>
+                        <h2 className="text-base sm:text-lg font-semibold text-gray-900">Products</h2>
+                        <button
+                            onClick={() => setShowForm(!showForm)}
+                            className="text-xs sm:text-sm px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                        >
+                            {showForm ? 'Cancel' : '+ Add product'}
+                        </button>
                     </div>
 
-                    {/* Search */}
                     {!loading && products.length > 0 && (
                         <div className="px-4 sm:px-6 py-3 border-b bg-slate-50">
                             <input
@@ -270,14 +248,11 @@ export default function MerchantDashboard() {
                         </div>
                     )}
 
-                    {/* Add product form */}
                     {showForm && (
                         <form onSubmit={handleAddProduct} className="px-4 sm:px-6 py-5 border-b bg-slate-50">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Product image
-                                    </label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Product image</label>
                                     <div className="flex items-start gap-4">
                                         <div className="w-28 h-28 sm:w-32 sm:h-32 bg-white border-2 border-dashed border-gray-300 rounded flex items-center justify-center overflow-hidden flex-shrink-0">
                                             {previewUrl ? (
@@ -294,15 +269,9 @@ export default function MerchantDashboard() {
                                                 onChange={handleFileSelect}
                                                 className="block w-full text-xs sm:text-sm text-gray-700 file:mr-3 file:py-2 file:px-3 file:rounded file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                             />
-                                            {uploading && (
-                                                <p className="text-xs text-blue-600 mt-2">Uploading…</p>
-                                            )}
-                                            {imageUrl && !uploading && (
-                                                <p className="text-xs text-green-600 mt-2">✓ Uploaded</p>
-                                            )}
-                                            <p className="text-xs text-gray-500 mt-2">
-                                                JPG, PNG, WebP, GIF · max 5 MB
-                                            </p>
+                                            {uploading && <p className="text-xs text-blue-600 mt-2">Uploading…</p>}
+                                            {imageUrl && !uploading && <p className="text-xs text-green-600 mt-2">✓ Uploaded</p>}
+                                            <p className="text-xs text-gray-500 mt-2">JPG, PNG, WebP, GIF · max 5 MB</p>
                                         </div>
                                     </div>
                                 </div>
@@ -328,9 +297,7 @@ export default function MerchantDashboard() {
                                                 <option key={c} value={c} />
                                             ))}
                                         </datalist>
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            Type any category — furniture, cars, anything.
-                                        </p>
+                                        <p className="text-xs text-gray-500 mt-1">Type any category — furniture, cars, anything.</p>
                                     </div>
                                     <div className="grid grid-cols-2 gap-3">
                                         <input
@@ -346,7 +313,6 @@ export default function MerchantDashboard() {
                                     </div>
                                 </div>
                             </div>
-
                             <button
                                 type="submit"
                                 disabled={uploading}
@@ -357,7 +323,6 @@ export default function MerchantDashboard() {
                         </form>
                     )}
 
-                    {/* Loading / empty / product list */}
                     {loading ? (
                         <div className="p-6 space-y-3">
                             {Array.from({ length: 5 }).map((_, i) => (
@@ -382,16 +347,12 @@ export default function MerchantDashboard() {
                     ) : filteredProducts.length === 0 ? (
                         <div className="p-10 text-center">
                             <p className="text-gray-600">No products match "{search}"</p>
-                            <button
-                                onClick={() => setSearch('')}
-                                className="text-blue-600 hover:underline text-sm mt-2"
-                            >
+                            <button onClick={() => setSearch('')} className="text-blue-600 hover:underline text-sm mt-2">
                                 Clear search
                             </button>
                         </div>
                     ) : (
                         <>
-                            {/* Desktop table */}
                             <div className="hidden md:block overflow-x-auto">
                                 <table className="w-full text-sm">
                                     <thead className="bg-slate-50 text-gray-600">
@@ -413,9 +374,10 @@ export default function MerchantDashboard() {
                                                     <td className="px-6 py-3">
                                                         {p.image_url ? (
                                                             <img
-                                                                src={`${API_URL}${p.image_url}`}
+                                                                src={resolveImageUrl(p.image_url)}
                                                                 alt={p.name}
                                                                 className="w-12 h-12 object-contain bg-slate-50 rounded border"
+                                                                onError={(e) => { e.target.style.display = 'none' }}
                                                             />
                                                         ) : (
                                                             <div className="w-12 h-12 bg-gray-100 rounded border flex items-center justify-center">
@@ -441,10 +403,7 @@ export default function MerchantDashboard() {
                                                         )}
                                                     </td>
                                                     <td className="px-6 py-3 text-right">
-                                                        <button
-                                                            onClick={() => handleDelete(p.id)}
-                                                            className="text-red-600 hover:underline text-sm"
-                                                        >
+                                                        <button onClick={() => handleDelete(p.id)} className="text-red-600 hover:underline text-sm">
                                                             Delete
                                                         </button>
                                                     </td>
@@ -455,7 +414,6 @@ export default function MerchantDashboard() {
                                 </table>
                             </div>
 
-                            {/* Mobile card list */}
                             <div className="md:hidden divide-y">
                                 {filteredProducts.map((p) => {
                                     const pred = predictions[p.id]
@@ -464,9 +422,10 @@ export default function MerchantDashboard() {
                                             <div className="flex-shrink-0">
                                                 {p.image_url ? (
                                                     <img
-                                                        src={`${API_URL}${p.image_url}`}
+                                                        src={resolveImageUrl(p.image_url)}
                                                         alt={p.name}
                                                         className="w-16 h-16 object-contain bg-slate-50 rounded border"
+                                                        onError={(e) => { e.target.style.display = 'none' }}
                                                     />
                                                 ) : (
                                                     <div className="w-16 h-16 bg-slate-100 rounded border"></div>
@@ -476,9 +435,7 @@ export default function MerchantDashboard() {
                                                 <p className="font-medium text-slate-900 text-sm line-clamp-2">{p.name}</p>
                                                 <p className="text-xs text-slate-500 mt-0.5">{p.category}</p>
                                                 <div className="flex items-center justify-between mt-2">
-                                                    <span className="text-sm font-bold text-slate-900">
-                                                        ${Number(p.price_usd).toFixed(2)}
-                                                    </span>
+                                                    <span className="text-sm font-bold text-slate-900">${Number(p.price_usd).toFixed(2)}</span>
                                                     <span className={`text-xs ${p.stock_quantity < p.low_stock_threshold ? 'text-red-600 font-medium' : 'text-slate-500'}`}>
                                                         {p.stock_quantity} in stock
                                                     </span>
@@ -490,10 +447,7 @@ export default function MerchantDashboard() {
                                                 ) : (
                                                     <p className="text-xs text-slate-400 mt-1">No AI forecast</p>
                                                 )}
-                                                <button
-                                                    onClick={() => handleDelete(p.id)}
-                                                    className="text-xs text-red-600 hover:underline mt-2"
-                                                >
+                                                <button onClick={() => handleDelete(p.id)} className="text-xs text-red-600 hover:underline mt-2">
                                                     Delete
                                                 </button>
                                             </div>

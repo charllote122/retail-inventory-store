@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     # App
     app_name: str = "Retail SaaS"
     debug: bool = True
+    frontend_url: str = "http://localhost:5173"
     allowed_origins: list[str] = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
@@ -52,7 +53,6 @@ class Settings(BaseSettings):
         if isinstance(value, str):
             value = value.strip()
 
-            # Try JSON array format first
             if value.startswith("[") and value.endswith("]"):
                 try:
                     parsed = json.loads(value)
@@ -61,7 +61,6 @@ class Settings(BaseSettings):
                 except json.JSONDecodeError:
                     pass
 
-            # Fall back to comma-separated
             return [o.strip() for o in value.split(",") if o.strip()]
 
         raise TypeError(
