@@ -5,8 +5,6 @@ A production-grade SaaS platform inspired by Shopify. Merchants launch their own
 **🔴 Live Demo:** [retail-inventory-store.vercel.app](https://retail-inventory-store.vercel.app)
 **🔵 API Docs:** [retail-inventory-store.onrender.com/docs](https://retail-inventory-store.onrender.com/docs)
 
-> ⚠️ The backend uses Render's free tier, which sleeps after 15 minutes of inactivity. The first request may take 30–60 seconds to wake up.
-
 ---
 
 ## 🎯 Features
